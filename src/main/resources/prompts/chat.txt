@@ -1,0 +1,6 @@
+{message}
+
+Additional CONTEXT:
+--------------------
+{documents}
+--------------------

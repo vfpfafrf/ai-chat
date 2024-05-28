@@ -7,7 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.spring' version '1.9.23'
 }
 
-group = 'com.picsart'
+group = 'experiments'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -16,13 +16,46 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8"
+
+    implementation platform("org.springframework.ai:spring-ai-bom:0.8.1-SNAPSHOT")
+    implementation 'org.springframework.ai:spring-ai-ollama-spring-boot-starter'
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+    implementation 'org.springframework.ai:spring-ai-tika-document-reader'
+
+    implementation "org.apache.logging.log4j:log4j-api-kotlin:1.2.0"
+    implementation "org.springframework.boot:spring-boot-starter-log4j2"
+    modules {
+        module("org.springframework.boot:spring-boot-starter-logging") {
+            replacedBy("org.springframework.boot:spring-boot-starter-log4j2", "Use Log4j2 instead of Logback")
+        }
+    }
+    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0"
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+configurations {
+    var apacheLog4jVersion = "2.20.0"
+    configureEach {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+        resolutionStrategy {
+            force 'org.apache.logging.log4j:log4j-core:' + apacheLog4jVersion
+            force 'org.apache.logging.log4j:log4j-api:' + apacheLog4jVersion
+            force 'org.apache.logging.log4j:log4j-jul:' + apacheLog4jVersion
+        }
+    }
 }
 
 tasks.withType(KotlinCompile) {

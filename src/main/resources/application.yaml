@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: ai-chat
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        enabled: true
+        options:
+          model: llama3:8b
+      embedding:
+        enabled: true
+        options:
+          model: llama3:8b
+    openai:
+      api-key: <no-key>>
+      chat:
+        enabled: false
+        options:
+          model: gpt-4o
+          temperature: 0.1
+      embedding:
+        enabled: false
+        options:
+          model: text-embedding-3-small
+  main:
+    web-application-type: none
+  output:
+    ansi:
+      enabled: ALWAYS
+logging:
+  level:
+    org.springframework: ERROR
+code:
+  # enrich data with summary
+  summary: true
+  # enrich data with keywords
+  keywords: true
+  # path to source code
+  path: .
+  # project name
+  name: ai-chat
+  # technologies used in the project, to give LMM more context hints
+  tech: java,kotlin,spring boot,mongo,datadog,redis,kafka
+  # answer using
+  answer: kotlin

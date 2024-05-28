@@ -1,4 +1,4 @@
-package com.picsart.aichat
+package experiments.aichat
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
