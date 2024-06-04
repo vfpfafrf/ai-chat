@@ -35,7 +35,7 @@ class DocumentPipeline(
                 return date
             }
         }
-        return null
+        return Date()
     }
 
     fun loadFiles(lastModified: Date?) {
