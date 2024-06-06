@@ -18,7 +18,7 @@ class ConsoleChat(
         val lastModified:Date = loader.withLoader {
             val lastModified = loadPipeline.loadCache()
             loadPipeline.loadFiles(lastModified)
-            lastModified
+            lastModified ?: Date()
         } as Date
 
         val scanner = Scanner(System.`in`)
