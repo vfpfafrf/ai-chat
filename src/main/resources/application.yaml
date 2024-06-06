@@ -41,6 +41,6 @@ code:
   # project name
   name: ai-chat
   # technologies used in the project, to give LMM more context hints
-  tech: java,kotlin,spring boot,mongo,datadog,redis,kafka
+  tech: java,kotlin,spring boot,mongo,datadog,redis,kafka,junit5,mockk
   # answer using
   answer: kotlin
