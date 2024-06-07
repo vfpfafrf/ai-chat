@@ -10,17 +10,19 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class FunctionConfig() {
+class FunctionConfig(
+    private val codeConfiguration: CodeConfiguration
+) {
 
     @Bean
     fun getFileFunction(fileProviderService: FileProviderService): FunctionCallbackWrapper<FileRequest, FileResponse> =
-        FunctionCallbackWrapper.builder(FileFunction(fileProviderService))
+        FunctionCallbackWrapper.builder(FileFunction(fileProviderService, codeConfiguration))
             .withName("getFileContent")
             .withDescription("Retrieve file content from the project, by file name")
             .build()
 
     @Bean
-    fun getOpenApiDescription(codeConfiguration: CodeConfiguration): FunctionCallbackWrapper<FileRequest, FileResponse> =
+    fun getOpenApiDescription(): FunctionCallbackWrapper<FileRequest, FileResponse> =
         FunctionCallbackWrapper.builder(GetOpenAPIFunction(codeConfiguration))
             .withName("getOpenApi")
             .withDescription("Retrieve OpenAPI/Swagger specification for the project")

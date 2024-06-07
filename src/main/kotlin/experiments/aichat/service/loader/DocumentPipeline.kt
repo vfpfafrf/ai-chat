@@ -89,7 +89,7 @@ class DocumentPipeline(
 
         val metadata = mapOf("path" to path)
 
-        file.toDocuumentsList()
+        file.toDocumentsList()
             .map { Document(it.content, it.metadata + metadata) }
             .enrichIf(enrichSummary, summaryMetadataEnricher)
             .enrichIf(enrichKeywords, keywordMetadataEnricher)
@@ -100,7 +100,7 @@ class DocumentPipeline(
             }
     }
 
-    private suspend fun File.toDocuumentsList() =
+    private suspend fun File.toDocumentsList() =
         FileSystemResource(this).let {
             try {
                 TikaDocumentReader(it).get()
