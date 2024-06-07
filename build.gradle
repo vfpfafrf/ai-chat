@@ -28,7 +28,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8"
 
-    implementation platform("org.springframework.ai:spring-ai-bom:0.8.1-SNAPSHOT")
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
     implementation 'org.springframework.ai:spring-ai-ollama-spring-boot-starter'
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
     implementation 'org.springframework.ai:spring-ai-tika-document-reader'

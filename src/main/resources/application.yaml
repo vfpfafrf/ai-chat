@@ -38,6 +38,8 @@ code:
   keywords: true
   # path to source code
   path: .
+  #path to openApi spec, or none
+  openapi: none
   # project name
   name: ai-chat
   # technologies used in the project, to give LMM more context hints

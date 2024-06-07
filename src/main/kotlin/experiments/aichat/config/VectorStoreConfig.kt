@@ -1,7 +1,7 @@
 package experiments.aichat.config
 
 import experiments.aichat.store.FilteredVectorStore
-import org.springframework.ai.embedding.EmbeddingClient
+import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -9,5 +9,5 @@ import org.springframework.context.annotation.Configuration
 class VectorStoreConfig {
 
     @Bean
-    fun vectorStore(embeddingClient: EmbeddingClient): FilteredVectorStore = FilteredVectorStore(embeddingClient)
+    fun vectorStore(embeddingClient: EmbeddingModel): FilteredVectorStore = FilteredVectorStore(embeddingClient)
 }

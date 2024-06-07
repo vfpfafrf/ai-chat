@@ -1,6 +1,7 @@
 package experiments.aichat
 
 import experiments.aichat.console.Loader
+import experiments.aichat.service.chat.ChatResponse
 import experiments.aichat.service.chat.ChatService
 import experiments.aichat.service.loader.DocumentPipeline
 import org.springframework.boot.CommandLineRunner
@@ -15,11 +16,11 @@ class ConsoleChat(
 
     override fun run(vararg args: String?) {
         val loader = Loader()
-        val lastModified:Date = loader.withLoader {
+        val lastModified: Date = loader.withLoader {
             val lastModified = loadPipeline.loadCache()
             loadPipeline.loadFiles(lastModified)
             lastModified ?: Date()
-        } as Date
+        }
 
         val scanner = Scanner(System.`in`)
         println("Enter your messages (type '/exit' to quit, '+message' to continue with context):")
@@ -39,7 +40,9 @@ class ConsoleChat(
                 continue
             }
 
-            val response = chatService.ask(input)
+            val response: ChatResponse = loader.withLoader("Generating answer") {
+                chatService.ask(input)
+            }
             println(response.responseText)
             println("More info: ${response.files}")
         }

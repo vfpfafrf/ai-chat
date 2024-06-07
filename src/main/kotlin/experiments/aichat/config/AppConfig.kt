@@ -12,6 +12,8 @@ class AppConfig(
     val enrichKeywords: Boolean,
     @Value("\${code.path}")
     val path: String,
+    @Value("\${code.openapi}")
+    val openapi: String,
     @Value("\${code.name}")
     val project: String,
     @Value("\${code.tech}")
@@ -25,6 +27,7 @@ class AppConfig(
             enrichSummary = enrichSummary,
             enrichKeywords = enrichKeywords,
             path = if (path.endsWith("/")) path else "$path/",
+            openapi = if (openapi.lowercase() == "none") null else openapi,
             project = project,
             tech = tech,
             answerLang = answerLang

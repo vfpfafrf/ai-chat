@@ -1,12 +1,14 @@
 package experiments.aichat.service.chat
 
 import experiments.aichat.config.CodeConfiguration
-import org.springframework.ai.chat.ChatClient
 import org.springframework.ai.chat.messages.Message
+import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.chat.prompt.PromptTemplate
 import org.springframework.ai.chat.prompt.SystemPromptTemplate
 import org.springframework.ai.document.Document
+import org.springframework.ai.openai.OpenAiChatModel
+import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.beans.factory.annotation.Value
@@ -16,9 +18,9 @@ import java.io.File
 
 @Service
 class ChatService(
-    val client: ChatClient,
+    val client: ChatModel,
     val vectorStore: VectorStore,
-    val config: CodeConfiguration
+    val config: CodeConfiguration,
 ) {
     @Value("classpath:/prompts/system.txt")
     private val systemPrompt: Resource? = null
@@ -52,16 +54,28 @@ class ChatService(
             chatHistory.add(userMessage)
         } else {
             val userMessage = PromptTemplate(userInChatPrompt)
-                .createMessage(mapOf(
-                    "message" to message,
-                    "documents" to docs.toFiles()
-                ))
+                .createMessage(
+                    mapOf(
+                        "message" to message,
+                        "documents" to docs.toFiles()
+                    )
+                )
             chatHistory.add(userMessage)
         }
 
         val messages = chatHistory
+        val prompt = if (client is OpenAiChatModel) {
+            val builder = OpenAiChatOptions.builder().withFunction("getFileContent")
+            if (config.openapi != null) {
+                builder.withFunction("getOpenApi")
+            }
+            Prompt(messages, builder.build())
+        } else {
+            Prompt(messages)
+        }
+
         return ChatResponse(
-            responseText = client.call(Prompt(messages)).result.output.content,
+            responseText = client.call(prompt).result.output.content,
             files = docs.getNames()
         )
     }
@@ -85,7 +99,7 @@ class ChatService(
             """.trimIndent()
         }
 
-    private fun List<Document>.getNames():Set<String> =
+    private fun List<Document>.getNames(): Set<String> =
         mapTo(mutableSetOf()) {
             it.metadata["source"] as String
         }

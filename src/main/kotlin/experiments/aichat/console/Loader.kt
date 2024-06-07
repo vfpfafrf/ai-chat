@@ -6,9 +6,9 @@ class Loader {
 
     private var stop = false
 
-    fun withLoader(f: () -> Any?): Any? = runBlocking {
+    fun <T> withLoader(message: String = "Processing", f: suspend () -> T): T = runBlocking {
         val animationJob = launch {
-            showAnimation()
+            showAnimation(message)
         }
         val result = withContext(Dispatchers.Default) {
             f()
@@ -18,14 +18,15 @@ class Loader {
         result
     }
 
-    private suspend fun showAnimation() {
+    private suspend fun showAnimation(message: String) {
         stop = false
         val animationChars = listOf("|", "/", "-", "\\")
         var i = 0
         while (!stop) {
-            print("\r${animationChars[i++ % animationChars.size]} Processing...")
+            print("\r${animationChars[i++ % animationChars.size]} $message...")
             delay(100)
         }
+        print("\r")
         println()
     }
 

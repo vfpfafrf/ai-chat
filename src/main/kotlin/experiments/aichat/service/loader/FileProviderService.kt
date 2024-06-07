@@ -11,7 +11,9 @@ class FileProviderService {
 
     private val fileExtensions = setOf("kt", "java", "gradle", "xml", "yaml", "properties", "md", "yml")
 
-    fun loadFiles(path: String, callback: (File) -> Unit) {
+    private val files: MutableMap<String, File> = mutableMapOf()
+
+    suspend fun loadFiles(path: String, callback: suspend (File) -> Unit) {
         val directory = File(path)
         if (!directory.exists() || !directory.isDirectory) {
             logger.error { "The specified path ($path) is not a valid directory." }
@@ -22,6 +24,7 @@ class FileProviderService {
                 val content = file.readText(Charsets.UTF_8)
                 if (!isBinaryContent(content) && !file.shouldIgnore(content)) {
                     try {
+                        files[file.name] = file
                         callback(file)
                     } catch (e: Exception) {
                         logger.error(e) { "Error while handling $file: ${e.message}" }
@@ -30,6 +33,8 @@ class FileProviderService {
             }
         }
     }
+
+    fun getFileByName(name: String): File? = files[name]
 
     /**
      * Simple check to determine if the content is likely binary.
