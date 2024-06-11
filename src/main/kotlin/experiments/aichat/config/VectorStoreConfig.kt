@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 class VectorStoreConfig(
     val config: CodeConfiguration,
     @Value("\${vectorStore.cache.flushThreshold}")
-    val flushThreshold: Int = 10
+    val flushThreshold: Int
 ) {
 
     @Bean
