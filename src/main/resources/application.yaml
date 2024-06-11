@@ -31,6 +31,9 @@ spring:
 logging:
   level:
     org.springframework: ERROR
+vectorStore:
+  cache:
+    flushThreshold: 10
 code:
   # enrich data with summary
   summary: true

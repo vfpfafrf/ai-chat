@@ -27,62 +27,52 @@ class DocumentPipeline(
 
     companion object : Logging
 
-    fun loadCache(): Date? {
-        with(getCacheFile()) {
-            if (this.exists() && this.isFile) {
-                vectorStore.load(this)
-                val date = Date(this.lastModified())
-                logger.info { "Vector DB loaded from file: ${this.absolutePath}, last modified: $date" }
-                return date
-            }
-        }
-        return null
-    }
-
-    suspend fun loadFiles(lastModified: Date?) {
+    suspend fun loadFiles(): Date =
         with(config) {
+            val lastModified = vectorStore.load()
             logger.info { "Start loading files from: $path" }
             populate(lastModified)
-            saveToFile()
+            vectorStore.flushToFile()
+            lastModified ?: Date()
         }
-    }
+
+    suspend fun update(lastModified: Date) =
+        with(config) {
+            populate(lastModified)
+            vectorStore.flushToFile()
+        }
 
     private suspend fun CodeConfiguration.populate(lastModified: Date?) {
         val basePath = File(path)
         val summaryMetadataEnricher = SummaryMetadataEnricher(client, listOf(CURRENT))
         val keywordMetadataEnricher = KeywordMetadataEnricher(client, 5)
         val splitter = TokenTextSplitter()
-        var numOfFiles = 0
 
         loader.loadFiles(path) { file ->
-            if (file.lastModified() < (lastModified?.time ?: -1)) {
+            val path = file.relativeTo(basePath).toString()
+            val id = vectorStore.filterMetadata("path", path)
+
+            if (id != null && file.lastModified() < (lastModified?.time ?: -1)) {
                 return@loadFiles
             }
 
             processFile(
                 file = file,
-                basePath = basePath,
+                id = id,
                 summaryMetadataEnricher = summaryMetadataEnricher,
                 keywordMetadataEnricher = keywordMetadataEnricher,
                 splitter = splitter
             )
-
-            numOfFiles++
-            if (numOfFiles % 50 == 0) {
-                saveToFile()
-            }
         }
     }
 
     private suspend fun CodeConfiguration.processFile(
         file: File,
-        basePath: File,
+        id: String?,
         summaryMetadataEnricher: SummaryMetadataEnricher,
         keywordMetadataEnricher: KeywordMetadataEnricher,
         splitter: TokenTextSplitter
     ) {
-        val path = file.relativeTo(basePath).toString()
-        val id = vectorStore.filterMetadata("path", path)
         if (id != null) {
             vectorStore.delete(listOf(id))
         }
@@ -104,20 +94,11 @@ class DocumentPipeline(
         FileSystemResource(this).let {
             try {
                 TikaDocumentReader(it).get()
-            } catch (_:Throwable) {
+            } catch (_: Throwable) {
                 TextReader(it).get()
             }
         }
 
     private fun List<Document>.enrichIf(condition: Boolean, enricher: DocumentTransformer): List<Document> =
         if (condition) enricher.apply(this) else this
-
-    private fun saveToFile() {
-        with(getCacheFile()) {
-            vectorStore.save(this)
-            logger.info { "Vector DB saved to file: ${this.absolutePath}" }
-        }
-    }
-
-    private fun getCacheFile() = File("${config.project}.cache")
 }

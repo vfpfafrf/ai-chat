@@ -17,9 +17,7 @@ class ConsoleChat(
     override fun run(vararg args: String?) {
         val loader = Loader()
         val lastModified: Date = loader.withLoader {
-            val lastModified = loadPipeline.loadCache()
-            loadPipeline.loadFiles(lastModified)
-            lastModified ?: Date()
+            loadPipeline.loadFiles()
         }
 
         val scanner = Scanner(System.`in`)
@@ -35,7 +33,7 @@ class ConsoleChat(
             }
             if (input.equals("/update", ignoreCase = true)) {
                 loader.withLoader {
-                    loadPipeline.loadFiles(lastModified)
+                    loadPipeline.update(lastModified)
                 }
                 continue
             }

@@ -2,6 +2,7 @@ package experiments.aichat.service.chat.function.file
 
 import experiments.aichat.config.CodeConfiguration
 import experiments.aichat.service.loader.FileProviderService
+import org.apache.logging.log4j.kotlin.Logging
 import java.io.File
 import java.util.function.Function
 
@@ -10,8 +11,11 @@ class FileFunction(
     private val codeConfiguration: CodeConfiguration
 ) : Function<FileRequest, FileResponse> {
 
+    companion object : Logging
+
     override fun apply(request: FileRequest): FileResponse {
         val fileName = request.fileName
+        logger.debug { "Call GetFile function with fileName=$fileName" }
         return resolveFile(fileName)?.toResponse() ?: FileResponse("File not found in the project")
     }
 
@@ -26,7 +30,7 @@ class FileFunction(
                 File("${codeConfiguration.path}${fileName}.kt")
             }.checkPath()
 
-    fun File?.checkPath(): File? {
+    private fun File?.checkPath(): File? {
         if (this == null) {
             return null
         }

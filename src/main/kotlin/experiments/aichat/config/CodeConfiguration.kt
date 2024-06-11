@@ -8,4 +8,7 @@ data class CodeConfiguration (
     val project: String,
     val tech: String,
     val answerLang:String
-)
+) {
+
+    fun getCacheFileName() = "$project.cache"
+}
