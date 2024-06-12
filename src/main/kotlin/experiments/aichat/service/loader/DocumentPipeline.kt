@@ -77,7 +77,9 @@ class DocumentPipeline(
             vectorStore.delete(listOf(id))
         }
 
-        val metadata = mapOf("path" to path)
+        val basePath = File(path)
+        val filePath = file.relativeTo(basePath).toString()
+        val metadata = mapOf("path" to filePath)
 
         file.toDocumentsList()
             .map { Document(it.content, it.metadata + metadata) }
