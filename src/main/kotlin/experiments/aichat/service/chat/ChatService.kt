@@ -1,6 +1,8 @@
 package experiments.aichat.service.chat
 
 import experiments.aichat.config.CodeConfiguration
+import experiments.aichat.main
+import experiments.aichat.service.file.FileService
 import org.springframework.ai.chat.messages.Message
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.chat.prompt.Prompt
@@ -16,11 +18,13 @@ import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import java.io.File
 
+
 @Service
 class ChatService(
     val client: ChatModel,
     val vectorStore: VectorStore,
     val config: CodeConfiguration,
+    val fileService: FileService
 ) {
     @Value("classpath:/prompts/system.txt")
     private val systemPrompt: Resource? = null
@@ -84,13 +88,16 @@ class ChatService(
         chatHistory.clear()
     }
 
-    private fun List<Document>.toFiles(): String =
-        mapTo(mutableSetOf()) {
+    private fun List<Document>.toFiles(): String {
+        val mainFiles = mapTo(mutableSetOf()) {
             val path = it.metadata["path"] as String
             File("${config.path}/$path")
         }.filter {
             it.exists()
-        }.joinToString("\n") {
+        }
+        val linkedFiles = linkedFiles()
+
+        return (mainFiles + linkedFiles.take(4)).distinct().joinToString("\n") {
             val text = it.readText()
             """    
                 ```
@@ -98,6 +105,15 @@ class ChatService(
                 ```
             """.trimIndent()
         }
+    }
+
+    private fun List<Document>.linkedFiles():List<File> =
+        mapNotNull{ it.metadata["linked"] as List<String>? }
+            .flatMap {
+                it.map { fileName ->
+                    fileService.resolveFile(fileName)
+                }
+            }.filterNotNull()
 
     private fun List<Document>.getNames(): Set<String> =
         mapTo(mutableSetOf()) {

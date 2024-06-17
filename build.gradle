@@ -42,6 +42,9 @@ dependencies {
     }
     implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0"
 
+    implementation 'io.github.bonede:tree-sitter:0.22.5'
+    implementation 'io.github.bonede:tree-sitter-kotlin:0.3.1'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

@@ -1,6 +1,7 @@
 package experiments.aichat.service.loader
 
 import experiments.aichat.config.CodeConfiguration
+import experiments.aichat.service.transformer.KotlinTransformer
 import experiments.aichat.store.FilteredVectorStore
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.ai.chat.model.ChatModel
@@ -24,6 +25,7 @@ class DocumentPipeline(
     val vectorStore: FilteredVectorStore,
     val config: CodeConfiguration
 ) {
+    private val kotlinTransformer = KotlinTransformer()
 
     companion object : Logging
 
@@ -53,9 +55,11 @@ class DocumentPipeline(
             val id = vectorStore.filterMetadata("path", path)
 
             if (id != null && file.lastModified() < (lastModified?.time ?: -1)) {
+                logger.info {"pass $path"}
                 return@loadFiles
             }
 
+            logger.info {"load $path / $id"}
             processFile(
                 file = file,
                 id = id,
@@ -83,13 +87,11 @@ class DocumentPipeline(
 
         file.toDocumentsList()
             .map { Document(it.content, it.metadata + metadata) }
+            .enrichIf(file.extension == "kt") { kotlinTransformer.transform(it) }
             .enrichIf(enrichSummary, summaryMetadataEnricher)
             .enrichIf(enrichKeywords, keywordMetadataEnricher)
-            .let {
-                splitter.apply(it).also { docs ->
-                    vectorStore.add(docs)
-                }
-            }
+            .let { splitter.apply(it) }
+            .also { docs -> vectorStore.add(docs) }
     }
 
     private suspend fun File.toDocumentsList() =

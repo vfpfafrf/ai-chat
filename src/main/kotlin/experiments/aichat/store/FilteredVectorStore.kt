@@ -10,6 +10,7 @@ import org.springframework.ai.vectorstore.SimpleVectorStore
 import org.springframework.core.io.Resource
 import java.io.File
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * simple vector store, but with simple filtering of metadata
@@ -22,8 +23,6 @@ class FilteredVectorStore(
 
     companion object: Logging
 
-    private var addedDocuments:Int = 0
-
     fun filterMetadata(field:String, value: Any):String? =
         store.asSequence().filter {
             it.value.metadata[field] == value
@@ -31,16 +30,10 @@ class FilteredVectorStore(
             it.key
         }.toList().firstOrNull()
 
-    override fun load(file: File?) {
-        super.load(file)
-        addedDocuments = 0
-    }
-
-    override fun load(resource: Resource?) {
-        super.load(resource)
-        addedDocuments = 0
-    }
-
+    /**
+     * load storage from cache
+     * @return Date - last modified date of cache, or null
+     */
     fun load(): Date? {
         val file = File(cachePath)
         if (file.exists() && file.isFile) {
@@ -55,9 +48,8 @@ class FilteredVectorStore(
 
     override fun add(documents: MutableList<Document>?) {
         super.add(documents)
-        addedDocuments ++
 
-        if (addedDocuments % flushThreshold == 0) {
+        if (store.size % flushThreshold == 0) {
             flushToFile()
         }
     }
